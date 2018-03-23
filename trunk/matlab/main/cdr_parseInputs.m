@@ -52,6 +52,7 @@ options.num_images_provided     = [];
 options.bit_depth               = [];   % specified as maximum integer: 2^8, 2^12, 2^16
 options.correction_mode         = [];   % 0 ='illumination preserving' (default), 1='zero-light_perserving', or 2='direct'
 options.handles                 = [];   % used for GUI handles
+options.ome_channel             = -1;
 
 %% internal options, should not be reset by user without expert knowledge
 options.target_num_pixels     	= 9400;
@@ -85,6 +86,8 @@ for i = 1:numel(v)
                 options.correction_mode = getParam(v,i);
             case 'destination'
                 options.folder_destination = getFolder(v,i);            
+            case 'ome_channel'
+                options.ome_channel = getParam(v,i);
             end       
     end
     

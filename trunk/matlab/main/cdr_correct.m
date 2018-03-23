@@ -62,7 +62,8 @@ end
 
 
 % save the correction model to the destination folder
-filename = sprintf('%s%s', options.folder_destination, 'cidre_model.mat');
+%filename = sprintf('%s%s', options.folder_destination, 'cidre_model.mat');
+filename = sprintf('%scidre_model%d.mat', options.folder_destination, options.ome_channel);
 save(filename, 'model', 'options');
 fprintf(' Saved the correction model to %s\n', filename);
 
@@ -82,7 +83,12 @@ fprintf(' Writing %s corrected images to %s\n ', upper(str), options.folder_dest
 t1 = tic;
 for z = 1:options.num_images_provided
     if mod(z,100) == 0; fprintf('.'); end  % progress to the command line
-    I = imread([options.folder_source options.filenames{z}]);
+    if options.ome_channel == -1
+        I = imread([options.folder_source options.filenames{z}]);
+    else
+        reader = bfGetReader([options.folder_source options.filenames{z}]);
+        I = bfGetPlane(reader, options.ome_channel);
+    end
     imageClass = class(I);
     I = double(I);
     
@@ -104,6 +110,9 @@ for z = 1:options.num_images_provided
     
     Icorrected = cast(Icorrected, imageClass);
     [pth name ext] = fileparts(options.filenames{z});
+    if options.ome_channel ~= -1
+        ext = '.tiff';
+    end
     filename = sprintf('%s%s%s', options.folder_destination, name, ext);
     %fprintf('writing %s\n', filename);
     imwrite(Icorrected, filename);

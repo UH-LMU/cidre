@@ -99,9 +99,14 @@ if ischar(source)
     % read the first provided image, check that it is monochromatic, store 
     % its size in the options structure, and determine the working image 
     % size we will use
-    I = imread([options.folder_source options.filenames{1}]);
-    if numel(size(I)) == 3
-        error('CIDRE:loadImages', 'Non-monochromatic image provided. CIDRE is designed for monochromatic images. Store each channel as a separate image and re-run CIDRE.'); 
+    if options.ome_channel == -1
+        I = imread([options.folder_source options.filenames{1}]);
+        if numel(size(I)) == 3
+            error('CIDRE:loadImages', 'Non-monochromatic image provided. CIDRE is designed for monochromatic images. Store each channel as a separate image and re-run CIDRE.'); 
+        end
+    else
+        reader = bfGetReader([options.folder_source options.filenames{1}]);
+        I = bfGetPlane(reader, options.ome_channel);
     end
     options.image_size = size(I);
     [R C] = determine_working_size(options.image_size, options.target_num_pixels);
@@ -115,7 +120,13 @@ if ischar(source)
     S = zeros([options.working_size options.num_images_provided]);
     for z = 1:options.num_images_provided
         if mod(z,100) == 0; fprintf('.'); end  % progress to the command line
-        I = imread([options.folder_source options.filenames{z}]);
+     
+        if options.ome_channel == -1
+            I = imread([options.folder_source options.filenames{z}]);
+        else
+            reader = bfGetReader([options.folder_source options.filenames{z}]);
+            I = bfGetPlane(reader, options.ome_channel);
+        end
         I = double(I);
         maxI = max(maxI, max(I(:)));
         Irescaled = imresize(I, options.working_size);
